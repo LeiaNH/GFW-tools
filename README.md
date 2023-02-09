@@ -7,6 +7,6 @@ https://www.dropbox.com/sh/wzjquh63ifolwpl/AADOAQPtE_yKmTVIHjjxyhcka?dl=1
 
 Codes:
 
-* fishing_effort_area: this code provides how to use gfwr::get_raster() function to get a summary of fishing effort within an area delimited by a polygon in geojson format. 
+* fishing_effort_area.R: this code provides how to use gfwr::get_raster() function to get a summary of fishing effort within an area delimited by a polygon in geojson format. 
 
 
