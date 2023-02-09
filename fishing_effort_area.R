@@ -35,7 +35,7 @@ library(readxl)
 library(gfwr)
 
 # The use of gfwr requires a GFW API token, which users can request from the GFW API Portal (https://globalfishingwatch.org/our-apis/tokens). Mine is next:
-key <- readr::read_csv(paste0(WD, "GitData/GFW-tools/input/key.csv")) %>% # here I load a csv file where I stored my API token
+key <- readr::read_csv(paste0(WD, "GitData/GFW-tools/key.csv")) %>% # here I load a csv file where I stored my API token
   pull(key) 
 
 
