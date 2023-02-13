@@ -47,7 +47,7 @@ key <- readr::read_csv(paste0(WD, "GitData/GFW-tools/key.csv")) %>% # here I loa
 # https://geojson.io/#map=0.82/24.5/-7.7
 
 # set the areas (the name of the geojson files) that you want to process
-areas <- c("fao34","fao27")
+areas <- c("fao34","fao27partial")
 
 # set the years that you want to process
 years = c(2015:2022)
