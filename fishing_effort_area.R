@@ -6,6 +6,7 @@
 # Step 3. Define your study area
 # Step 4. Get the fishing effort summaries within the area
 # Step 5. Save info
+# Step 6. Quick map
 
 # ------------------- #
 # Step 1. Set your WD #
@@ -18,15 +19,17 @@ WD <- "C:/Users/lnh88/Dropbox/" #laptop
 # Step 2. Requirements #
 # -------------------- #
 
-# install tidyverse, qdapRegex and readxl to basic data manipulation
+# install tidyverse, qdapRegex and readxl for data manipulation and visualization
 #install.packages("tidyverse")
 #install.packages("qdapRegex")
 #install.packages(readxl)
+#install.packages(rnaturalearth)
 
 # load tidyverse, qdapRegex and readxl libraries
 library(tidyverse)
 library(qdapRegex)
 library(readxl)
+library(rnaturalearth)
 
 # install rgfw
 #devtools::install_github("GlobalFishingWatch/gfwr")
@@ -78,8 +81,10 @@ for (a in seq_along(areas)) {
   # vector of that countries
   EU <- ISO_EU_Countries %>% pull(ISOcode)
   
+  # empty list to store the raw data
+  lraw <- list()
   # empty list to store the summaries
-  l <- list()
+  lsz <- list()
   
   # let's loop it across years
   for(i in seq_along(years)){
@@ -95,8 +100,7 @@ for (a in seq_along(areas)) {
            region_source = 'user_json', #source of the region ('eez','mpa', 'trfmo' or 'user_json')
            key = key) #Authorization token. Can be obtained with gfw_auth function
     
-    # save data if you need to plot it 
-    # write.csv(raw, paste0("C:/Users/lnh88/Dropbox/GitData/GFW-tools/",y,"_allflags.csv"), row.names = F)
+    lraw[i] <- list(raw)
   
     # filter european flags
     raw <- raw %>%
@@ -113,16 +117,68 @@ for (a in seq_along(areas)) {
   # save data per year
   # write.csv(summary, paste0("C:/Users/lnh88/Dropbox/GitData/GFW-tools/",y,"_allflags.csv"), row.names = F)
   
-  l[i] <- list(summary)
+  lsz[i] <- list(summary)
 }
 
 # unlist data stored 
-output <- do.call(rbind, l)
+outputraw <- do.call(rbind, lraw)
+outputsz <- do.call(rbind, lsz)
 
 # ----------------- #
 # Step 5. Save data #
 # ----------------- #
 
-write.csv(output, paste0(WD,"GitData/GFW-tools/output/", areaname, "fishingeffort_geartypeEU.csv"), row.names = F)
+write.csv(outputraw, paste0(WD,"GitData/GFW-tools/output/", areaname, "raw_fishingeffort.csv"), row.names = F)
+
+write.csv(outputsz, paste0(WD,"GitData/GFW-tools/output/", areaname, "fishingeffort_geartypeEU.csv"), row.names = F)
 
 }
+
+# ----------------- #
+# Step 6. Quick map #
+# ----------------- #
+
+# Let's see that we want to plot Lithuanian fleet fishing effort within FAO37
+
+# First read the file with gridded data already saved
+fishingeffort <- read.csv(paste0(WD, "GitData/GFW-tools/output/fao34raw_fishingeffort.csv")) %>%
+  # filter the fleet that you are interested in
+  dplyr::filter(Flag == "LTU") %>%
+  rename('FishingHours'='Apparent.Fishing.hours',
+         'Year'='Time.Range')
+
+# If we want to plot year by year we need to parse the var to factor
+fishingeffort$Year = as.factor(fishingeffort$Year)
+
+# World polygons from rnaturalearthdata
+world <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")
+
+# Bounding box
+extent <- coord_sf(xlim = c(min(data$Lon), max(data$Lon)), ylim = c(min(data$Lat), max(data$Lat)))
+
+# plot it
+
+(p <- 
+    # open ggplot
+    ggplot() +
+    # plot and color world land mask  
+    geom_sf(data = world, fill= "antiquewhite") +
+    # geom_sf_label(data = world,aes(label = name))+
+    # theme 
+    theme(
+      # color water
+      panel.background = element_rect(fill="white"),
+      # plot grid lines
+      #panel.grid.major = element_line(color = gray(.5), linetype = "dashed", size = 0.5),
+      # remove axes title
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      legend.position="bottom")+
+    
+    #plot navigation hours data
+    geom_tile(data = fishingeffort, aes(x = Lon, y = Lat, fill = FishingHours))+
+    scale_fill_viridis_c(trans="log10")+
+  # limit your study area
+  extent +
+  # draw a panel per year
+  facet_wrap(~Year))
