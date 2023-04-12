@@ -1,5 +1,5 @@
-# fishing_effort_area.R
-# aim: Access data from Global Fishing Watch APIs to calculate fishing effort within a customized area
+# buffer_dailyCSV.R
+# aim: Access data from daily csv to calculate fishing effort and vessels within the surroundings of a animal location
 
 # Step 1. Set your working directory
 # Step 2. Install and load libraries required.
@@ -7,6 +7,7 @@
 # Step 4. Upload animal locations
 # Step 5: Buffer
 # Step 6: mmsi info extraction
+# Step 7: fleet info extraction
 
 # ------------------- #
 # Step 1. Set your WD #
@@ -49,13 +50,6 @@ library(gfwr)
 # load raster and sf libraries
 library(raster) 
 library(sf)
-
-# install rvest for web scrapping
-#install.packages("rvest")
-
-# load rvest
-library(rvest)
-
 
 # ------------------ #
 # Step 3. Study area #

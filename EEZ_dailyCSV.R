@@ -1,14 +1,95 @@
-# ~~~~~~~~~~~~~~ #
-# Step 5: EZZ sz #
-# ~~~~~~~~~~~~~~ #
+# EEZ_dailyCSV.R
+# aim: Access data from daily csv to calculate fishing effort and vessels within an EEZ
 
-p
+# Step 1. Set your working directory
+# Step 2. Install and load libraries required.
+# Step 3. Define your study area
+# Step 4. Load EEZ
+
+# ------------------- #
+# Step 1. Set your WD #
+# ------------------- #
+
+#WD <- "D:/Dropbox/" #minipc
+WD <- "C:/Users/lnh88/Dropbox/" #laptop
+
+# -------------------- #
+# Step 2. Requirements #
+# -------------------- #
+
+# install tidyverse, qdapRegex and readxl for data manipulation and visualization
+#install.packages("tidyverse")
+#install.packages("qdapRegex")
+#install.packages("readxl")
+#install.packages("rnaturalearth")
+#remotes::install_github("ropensci/rnaturalearthhires")
+#install.packages("maps)
+
+# load tidyverse, qdapRegex and readxl libraries
+library(tidyverse) 
+library(lubridate) 
+library(qdapRegex)
+library(readxl)
+library(rnaturalearth)
+library(rnaturalearthhires)
+library(maps) 
+
+# install rgfw
+#devtools::install_github("GlobalFishingWatch/gfwr")
+
+# load rgfw
+library(gfwr)
+
+# install raster and sf for spatial data manipulation
+#install.packages("raster")
+#install.packages("sf")
+
+# load raster and sf libraries
+library(raster) 
+library(sf)
+
+# ------------------ #
+# Step 3. Study area #
+# ------------------ #
+
+# World polygons from rnaturalearthdata
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+# Cape Verde shearwater foraging area
+extent <- coord_sf(xlim = c(-26, -11), ylim = c(13, 22))
+
+# This is just to remove warnings from ggplot
+options(warn=-1)
+
+# quick view of our study area
+(p <- 
+    # open ggplot
+    ggplot() +
+    # plot and color world land mask  
+    geom_sf(data = world, fill= "antiquewhite") +
+    geom_sf_label(data = world,aes(label = name))+
+    # limit your study area
+    extent +
+    # theme 
+    theme(
+      # color water
+      panel.background = element_rect(fill="aliceblue"),
+      # plot grid lines
+      panel.grid.major = element_line(color = gray(.5), linetype = "dashed", size = 0.5),
+      # remove axes title
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank()))
+
+
+# ---------------- #
+# Step 4. Load EEZ #
+# ---------------- #
 
 #https://www.marineregions.org/gazetteer.php?p=details&id=8369
 
 
 # Load EEZ polygons: EEZ shapefile from MarineRegions.org
-eez <- sf::read_sf(paste0(WD,"input/World_EEZ_v10_20180221"), layer = 'eez_v10') %>% 
+eez <- sf::read_sf(paste0(WD,"GitData/GFW-tools/input/World_EEZ_v10_20180221"), layer = 'eez_v10') %>% 
   filter(
     # select the 200 nautical mile polygon layer
     Pol_type == '200NM',
@@ -26,9 +107,13 @@ p +
   # limit your study area
   extent
 
+# ------------------------- #
+# Step 5. Total fleet hours #
+# ------------------------- #
+
 # Create dataframe of filenames dates
 effort_files <- tibble(
-  file = list.files(paste0(WD, 'input/fleet-daily-csvs-100-v2-2019'), 
+  file = list.files(paste0(WD, 'GitData/GFW-tools/input/fleet-daily-csvs-100-v2-2019'), 
                     pattern = '.csv', recursive = T, full.names = T),
   date = ymd(str_extract(file, 
                          pattern = '[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}')))
@@ -79,11 +164,12 @@ eez_effort <- effort_all_sf %>%
     summarize(
       total_hours = sum(hours, na.rm = TRUE)) %>%
     arrange(desc(total_hours)) %>%
+    drop_na() %>%
     slice(1:3)) # georgia, spain, china
 
 # Select those top 3 vessel flags
 eez_effort <- eez_effort %>%
-  dplyr::filter(flag == "GEO" | flag == "ESP" | flag == "CHN" )
+  dplyr::filter(flag == "GEO" | flag == "ESP" | flag == "CUW" )
 
 # Last plot!
 p +
@@ -96,11 +182,6 @@ p +
           fill=NA,
           alpha = 0.8,
           linetype = 2) +
-  #plot radar detections over the raster
-  geom_point(
-    data = radar,
-    aes(x = longitude, y = latitude), 
-    colour= "red") +
   # limit your study area
   extent +
   # facet by vessel flag

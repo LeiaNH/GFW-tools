@@ -1,24 +1,47 @@
-#################
-# WEB SCRAPPING #
-#################
+# vessel_ID.R
+# aim: Different ways to find out the vessel identity of a mmsi
 
-help(rvest)
+# Step 1. Set your working directory
+# Step 2. Install and load libraries required.
+# Step 3.
 
-mmsi <- unique(sz_mmsi$mmsi)[1]
-read_html(paste0("https://www.myshiptracking.com/vessels/mmsi-",mmsi))  %>%
-  html_nodes("strong") %>%
-  html_text()
 
-# mmsi <- "240337300"
-read_html(paste0("https://www.marinetraffic.com/en/ais/details/ships/mmsi:",mmsi)) %>%
-  html_nodes("head") %>%
-  html_text() 
+# ------------------- #
+# Step 1. Set your WD #
+# ------------------- #
 
-############
-# GFW DATA #
-############
+#WD <- "D:/Dropbox/" #minipc
+WD <- "C:/Users/lnh88/Dropbox/" #laptop
 
-fishing_vessels <- utils::read.csv(file=paste0(WD,"input/fishing-vessels-v2.csv")) 
+# -------------------- #
+# Step 2. Requirements #
+# -------------------- #
+
+# install rvest for web scrapping
+#install.packages("rvest")
+
+# load rvest
+library(rvest)
+
+# install rgfw
+#devtools::install_github("GlobalFishingWatch/gfwr")
+
+# load rgfw
+library(gfwr)
+
+
+# ------------ #
+# Step 3. mmsi #
+# ------------ #
+
+mmsiCode <- 263500286
+
+# ----------------- #
+# Step 4. GFW files #
+# ----------------- #
+
+
+fishing_vessels <- utils::read.csv(file=paste0(WD,"GitData/GFW-tools/input/fishing-vessels-v2.csv")) 
 
 glimpse(fishing_vessels)
 
@@ -51,4 +74,32 @@ glimpse(fishing_vessels)
 # fishing_hours_2019: Fishing hours for the vessel in 2019
 # fishing_hours_2020: Fishing hours for the vessel in 2020
 
-unique(sz_mmsi$mmsi) %in% unique(fishing_vessels$mmsi)
+fishing_vessels <- fishing_vessels %>%
+  dplyr::filter(mmsi == mmsiCode)
+
+# --------------- #
+# Step 5. GFW API #
+# --------------- #
+
+# The use of gfwr requires a GFW API token, which users can request from the GFW API Portal (https://globalfishingwatch.org/our-apis/tokens). Mine is next:
+key <- readr::read_csv(paste0(WD, "GitData/GFW-tools/key.csv")) %>% # here I load a csv file where I stored my API token
+  pull(key) 
+
+(gfw <- gfwr::get_vessel_info(query = mmsiCode, search_type = "basic", 
+                              dataset = "all", key = key))
+
+# --------------------- #
+# Step 6. Web Scrapping #
+# --------------------- #
+
+help(rvest)
+
+rvest::read_html(paste0("https://www.myshiptracking.com/vessels/mmsi-", mmsiCode))  %>%
+  rvest::html_nodes("strong") %>%
+  rvest::html_text()
+
+# mmsi <- "240337300"
+rvest::read_html(paste0("https://www.marinetraffic.com/en/ais/details/ships/mmsi:", mmsiCode)) %>%
+  rvest::html_nodes("head") %>%
+  rvest::html_text() 
+

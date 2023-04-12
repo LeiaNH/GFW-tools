@@ -1,4 +1,4 @@
-# fishing_effort_area.R
+# fishingEffort_API.R
 # aim: Access data from Global Fishing Watch APIs to calculate fishing effort within a customized area
 
 # Step 1. Set your working directory
