@@ -3,8 +3,10 @@
 
 # Step 1. Set your working directory
 # Step 2. Install and load libraries required.
-# Step 3.
-
+# Step 3. Define an mmsi
+# Step 4. Use GFW files
+# Step 5. Use GFW API
+# Step 6. Use Web Scrapping
 
 # ------------------- #
 # Step 1. Set your WD #
@@ -12,6 +14,8 @@
 
 #WD <- "D:/Dropbox/" #minipc
 WD <- "C:/Users/lnh88/Dropbox/" #laptop
+
+options(scipen=999)
 
 # -------------------- #
 # Step 2. Requirements #
