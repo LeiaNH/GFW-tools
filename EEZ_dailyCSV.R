@@ -5,6 +5,7 @@
 # Step 2. Install and load libraries required.
 # Step 3. Define your study area
 # Step 4. Load EEZ
+# Step 5. Total fleet hours
 
 # ------------------- #
 # Step 1. Set your WD #

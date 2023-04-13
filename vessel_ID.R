@@ -15,6 +15,7 @@
 #WD <- "D:/Dropbox/" #minipc
 WD <- "C:/Users/lnh88/Dropbox/" #laptop
 
+# In R, scipen is an option that controls the level of scientific notation used when printing numbers. Specifically, it determines the threshold at which scientific notation is used to represent numeric values.
 options(scipen=999)
 
 # -------------------- #
@@ -102,7 +103,6 @@ rvest::read_html(paste0("https://www.myshiptracking.com/vessels/mmsi-", mmsiCode
   rvest::html_nodes("strong") %>%
   rvest::html_text()
 
-# mmsi <- "240337300"
 rvest::read_html(paste0("https://www.marinetraffic.com/en/ais/details/ships/mmsi:", mmsiCode)) %>%
   rvest::html_nodes("head") %>%
   rvest::html_text() 

@@ -52,8 +52,14 @@ key <- readr::read_csv(paste0(WD, "GitData/GFW-tools/key.csv")) %>% # here I loa
 # set the areas (the name of the geojson files) that you want to process
 areas <- c("fao34","fao27partial")
 
+# let's keep just one area
+areas <- c("fao34")
+
 # set the years that you want to process
-years = c(2015:2022)
+years <- c(2015:2022)
+
+# let's keep just one year
+years <- 2015
 
 for (a in seq_along(areas)) {
   
@@ -77,6 +83,8 @@ for (a in seq_along(areas)) {
   # Country list: https://european-union.europa.eu/principles-countries-history/country-profiles_en
   # ISO codes: https://www.iso.org/obp/ui/#search
   ISO_EU_Countries <- readxl::read_excel(paste0(WD, "GitData/GFW-tools/input/ISO_EU_Countries.xlsx"))
+  
+  # however explore some R packages that already parse that iso codes
 
   # vector of that countries
   EU <- ISO_EU_Countries %>% pull(ISOcode)
@@ -154,7 +162,8 @@ fishingeffort$Year = as.factor(fishingeffort$Year)
 world <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")
 
 # Bounding box
-extent <- coord_sf(xlim = c(min(data$Lon), max(data$Lon)), ylim = c(min(data$Lat), max(data$Lat)))
+extent <- coord_sf(xlim = c(min(fishingeffort$Lon), max(fishingeffort$Lon)), 
+                   ylim = c(min(fishingeffort$Lat), max(fishingeffort$Lat)))
 
 # plot it
 
