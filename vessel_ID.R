@@ -22,6 +22,8 @@ options(scipen=999)
 # Step 2. Requirements #
 # -------------------- #
 
+library(tidyverse)
+
 # install rvest for web scrapping
 #install.packages("rvest")
 
