@@ -286,3 +286,4 @@ p1 +
       navigating_hours = sum(hours),
       fishing_hours = sum(fishing_hours)
     ))
+
