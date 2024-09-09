@@ -12,8 +12,8 @@
 # Step 1. Set your WD #
 # ------------------- #
 
-#WD <- "D:/Dropbox/" #minipc
-WD <- "C:/Users/lnh88/Dropbox/" #laptop
+WD <- "D:/Dropbox/" #minipc
+#WD <- "C:/Users/lnh88/Dropbox/" #laptop
 
 # -------------------- #
 # Step 2. Requirements #
@@ -30,6 +30,8 @@ library(tidyverse)
 library(qdapRegex)
 library(readxl)
 library(rnaturalearth)
+library(geojsonsf)
+library(sf)
 
 # install rgfw
 #devtools::install_github("GlobalFishingWatch/gfwr")
@@ -53,13 +55,13 @@ key <- readr::read_csv(paste0(WD, "GitData/GFW-tools/key.csv")) %>% # here I loa
 areas <- c("fao34","fao27partial")
 
 # let's keep just one area
-areas <- c("fao34")
+#areas <- c("fao34")
 
 # set the years that you want to process
-years <- c(2015:2022)
+years <- c(2018:2019)
 
 # let's keep just one year
-years <- 2015
+# years <- 2015
 
 for (a in seq_along(areas)) {
   
@@ -70,10 +72,13 @@ for (a in seq_along(areas)) {
   # After that, save that polygon as json format. Now you will have a text with the info of your polygon
   (area <- read_lines(paste0(WD, "GitData/GFW-tools/input/",areaname,".geojson")))
   # Select the coordinates
-  (coords <- qdapRegex::rm_between(area, "[[[", "]]]", extract=TRUE))
+  #(coords <- qdapRegex::rm_between(area, "[[[", "]]]", extract=TRUE))
   # And paste those coordinates in a geojson string 
-  area <- '{"geojson":{"type":"Polygon","coordinates": [[[yourcoords]]]}}'
-  area <- gsub("yourcoords", coords[[1]],  area)
+  #area <- '{"geojson":{"type":"Polygon","coordinates": [[[yourcoords]]]}}'
+  #area <- gsub("yourcoords", coords[[1]],  area)
+  
+  sf <- geojson_sf(area)
+  head(sf)
   
   # ------------------------------ #
   # Step 4. Fishing effort summary #
@@ -100,13 +105,15 @@ for (a in seq_along(areas)) {
     y <- years[i]  
     
     # get information: GFW base function to get raster from API and convert response to data frame
-    raw <- get_raster(spatial_resolution = 'low', # Can be "low" = 0.1 degree or "high" = 0.01 degree
-           temporal_resolution = 'yearly', # Can be 'daily','monthly','yearly'
-           group_by = 'flagAndGearType', # Can be 'vessel_id', 'flag', 'geartype', 'flagAndGearType
-           date_range = paste0(y, '-01-01',',', y, '-12-31'),
-           region = area, # geojson or GFW region code, shape to filter raster
-           region_source = 'user_json', #source of the region ('eez','mpa', 'trfmo' or 'user_json')
-           key = key) #Authorization token. Can be obtained with gfw_auth function
+    raw <- get_raster(
+      spatial_resolution = 'LOW', # Can be "low" = 0.1 degree or "high" = 0.01 degree
+      temporal_resolution = 'YEARLY', # Can be 'daily','monthly','yearly'
+      group_by = 'VESSEL_ID', # Can be 'vessel_id', 'flag', 'geartype', 'flagAndGearType
+      start_date = paste0(y, '-01-01'),
+      end_date = paste0(y, '-12-31'),
+      region = sf, # geojson or GFW region code, shape to filter raster
+      region_source = 'USER_SHAPEFILE', #source of the region ('eez','mpa', 'trfmo' or 'user_json')
+      key = key) #Authorization token. Can be obtained with gfw_auth function
     
     lraw[i] <- list(raw)
   
@@ -116,8 +123,9 @@ for (a in seq_along(areas)) {
     
     # summarize total fishing effort per flag and geartype
     summary <- raw %>%
-      dplyr::rename('FishingHours' = 'Apparent Fishing hours',
-                  'Year' = 'Time Range') %>%
+      dplyr::rename('FishingHours' = 'Apparent Fishing Hours',
+                  'Year' = 'Time Range',
+                  'Geartype' = 'Gear Type') %>%
       dplyr::group_by(Year, Flag, Geartype) %>%
       summarize(
       Fishing_Hours = sum(FishingHours, na.rm = T)
@@ -136,9 +144,9 @@ outputsz <- do.call(rbind, lsz)
 # Step 5. Save data #
 # ----------------- #
 
-write.csv(outputraw, paste0(WD,"GitData/GFW-tools/output/", areaname, "raw_fishingeffort.csv"), row.names = F)
+write.csv(outputraw, paste0(WD,"GitData/GFW-tools/output/", areaname, "_", mmsiCode, "raw_fishingeffort.csv"), row.names = F)
 
-write.csv(outputsz, paste0(WD,"GitData/GFW-tools/output/", areaname, "fishingeffort_geartypeEU.csv"), row.names = F)
+write.csv(outputsz, paste0(WD,"GitData/GFW-tools/output/", areaname, "_",mmsiCode, "fishingeffort_geartypeEU.csv"), row.names = F)
 
 }
 

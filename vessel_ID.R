@@ -12,8 +12,8 @@
 # Step 1. Set your WD #
 # ------------------- #
 
-#WD <- "D:/Dropbox/" #minipc
-WD <- "C:/Users/lnh88/Dropbox/" #laptop
+WD <- "D:/Dropbox/" #minipc
+#WD <- "C:/Users/lnh88/Dropbox/" #laptop
 
 # In R, scipen is an option that controls the level of scientific notation used when printing numbers. Specifically, it determines the threshold at which scientific notation is used to represent numeric values.
 options(scipen=999)
@@ -41,7 +41,7 @@ library(gfwr)
 # Step 3. mmsi #
 # ------------ #
 
-mmsiCode <- 263500286
+mmsiCode <- 225987981
 
 # ----------------- #
 # Step 4. GFW files #
@@ -92,7 +92,7 @@ fishing_vessels <- fishing_vessels %>%
 key <- readr::read_csv(paste0(WD, "GitData/GFW-tools/key.csv")) %>% # here I load a csv file where I stored my API token
   pull(key) 
 
-(gfw <- gfwr::get_vessel_info(query = mmsiCode, search_type = "basic", 
+(gfw <- gfwr::get_vessel_info(query = mmsiCode, search_type = "search", 
                               dataset = "all", key = key))
 
 # --------------------- #
