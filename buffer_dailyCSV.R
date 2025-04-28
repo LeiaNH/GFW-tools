@@ -152,12 +152,12 @@ mmsi <- read.csv(paste0(WD,"GitData/GFW-tools/input/mmsi-daily-csvs-10-v3-2019/m
 
 # Brief sight of radar data
 glimpse(mmsi)
-# date: Date in YYYY-MM-DD format
-# cell_ll_lat: the latitude of the lower left corner of the grid cell, in decimal degrees
-# cell_ll_lon: the longitude of the lower left corner of the grid cell, in decimal degrees
-# mmsi_present: number of MMSI of this flag state and geartype that visited this grid cell on this day
-# hours: hours that vessels of this gear type and flag were present in this gridcell on this day
-# fishing_hours: hours that vessels of this geartype and flag were fishing in this grid cell on this day
+#date: Date in YYYY-MM-DD format
+#cell_ll_lat: The latitude of the lower left (ll) corner of the grid cell, in decimal degrees
+#cell_ll_lon: The longitude of the lower left (ll) corner of the grid cell, in decimal degrees
+#mmsi: Maritime Mobile Service Identity, the identifier for AIS
+#hours: Hours that the MMSI was broadcasting on AIS while present in the grid cell on this day
+#fishing_hours: Hours that the MMSI was broadcasting on AIS in this grid cell on this day and detected as fishing by the GFW fishing detection model
 
 # Crop data from our study area
 mmsi <- mmsi %>%
@@ -214,6 +214,40 @@ p1 +
       fishing_hours = sum(fishing_hours)
     ))
 
+# mmsi info
+sz_mmsi_max_fishing <- sz_mmsi %>%
+  dplyr::filter(fishing_hours == max(fishing_hours)) %>%
+  pull(mmsi)
+
+mmsi_info <- read.csv(paste0(WD,"GitData/GFW-tools/input/fishing-vessels-v3.csv"))
+
+glimpse(mmsi_info)
+
+#mmsi: Maritime Mobile Service Identity, the identifier for AIS
+#year: Year 
+#flag_ais: Flag state (ISO3 value) for the vessel as determined by the first three digits (MID) of the MMSI number
+#flag_registry: Flag state (ISO3 value) for the vessel as listed on vessel registries (when applicable)
+#flag_gfw: Flag state (ISO3 value) assigned to the vessel by GFW after considering all available information
+#vessel_class_inferred: Vessel class (gear type) inferred by the GFW vessel classification neural net model
+#vessel_class_inferred_score: Neural net score (0-1) for the top scoring vessel class (gear type) inferred by the GFW vessel classification neural net model. Values closer to 1 indicate higher confidence by the neural net
+#vessel_class_registry: Vessel class (gear type) for the vessel as listed on vessel registries (if applicable)
+#vessel_class_gfw: Vessel class (gear type) assigned to the vessel by GFW after considering all available information
+#self_reported_fishing_vessel: Whether the vessel broadcasts the 'Fishing' ship type in > 98% of AIS identity messages
+#length_m_inferred: Vessel length (meters) inferred by the GFW vessel classification neural net model
+#length_m_registry: Vessel length (meters) for the vessel as listed on vessel registries (if applicable)
+#length_m_gfw: Vessel length (meters) assigned to the vessel by GFW after considering all available information
+#engine_power_kw_inferred: Engine power (kilowatts) inferred by the GFW vessel classification neural net model
+#engine_power_kw_registry: Engine power (kilowatts) for the vessel as listed on vessel registries (if applicable)
+#engine_power_kw_gfw: Engine power (kilowatts) assigned to the vessel by GFW after considering all available information
+#tonnage_gt_inferred: Tonnage (gross tons) inferred by the GFW vessel classification neural net model
+#tonnage_gt_registry: Tonnage (gross tons) for the vessel as listed on vessel registries
+#tonnage_gt_gfw: Tonnage (gross tons) assigned to the vessel by GFW after considering all available information
+#registries_listed: Registries where the vessel is listed and used to inform the _registry fields (if applicable)
+#active_hours: Hours the vessel was broadcasting AIS and moving faster than 0.1 knots
+#fishing_hours: Hours the vessel was broadcasting AIS and detected as fishing by the GFW fishing detection neural net model 
+
+(mmsi_info <- mmsi_info %>% dplyr::filter(mmsi == sz_mmsi_max_fishing))
+
 # ------------------------ #
 # Step 7: fleet extraction #
 # ------------------------ #
@@ -222,14 +256,15 @@ fleet <- read.csv(paste0(WD,"GitData/GFW-tools/input/fleet-daily-csvs-100-v3-201
 
 # Brief sight of radar data
 glimpse(fleet)
-# date: Date in YYYY-MM-DD format
-# cell_ll_lat: the latitude of the lower left corner of the grid cell, in decimal degrees
-# cell_ll_lon: the longitude of the lower left corner of the grid cell, in decimal degrees
-# flag: flag state, in iso3 format
-# geartype: geartype, see above description of gear types
-# hours: hours that vessels of this gear type and flag were present in this gridcell on this day
-# fishing_hours: hours that vessels of this geartype and flag were fishing in this grid cell on this day
-# mmsi_present: number of MMSI of this flag state and geartype that visited this grid cell on this day
+
+#date: Date in YYYY-MM-DD format. For the fleet-monthly-10-v3 data, the date corresponds to the first date of the month
+#cell_ll_lat: The latitude of the lower left (ll) corner of the grid cell, in decimal degrees (WGS84)
+#cell_ll_lon: The longitude of the lower left (ll) corner of the grid cell, in decimal degrees (WGS84)
+#flag: Flag state (ISO3 value), based on flag_gfw in fishing-vessels-v3.csv
+#geartype: Gear type, based on vessel_class_gfw in fishing-vessels-v3.csv 
+#hours: Hours that MMSI of this geartype and flag were broadcasting on AIS while present in the grid cell on this day
+#fishing_hours: Hours that MMSI of this geartype and flag were broadcasting on AIS in this grid cell on this day and detected as fishing by the GFW fishing detection model
+#mmsi_present: Number of MMSI of this flag state and geartype that broadcasted on AIS while present in the grid cell on this day
 
 # Crop data from our study area
 
