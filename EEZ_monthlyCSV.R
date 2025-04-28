@@ -1,5 +1,5 @@
 # EEZ_dailyCSV.R
-# aim: Access data from daily csv to calculate fishing effort and vessels within an EEZ
+# aim: Access data from monthly csv to calculate fishing effort and vessels within an EEZ
 
 # Step 1. Set your working directory
 # Step 2. Install and load libraries required.
@@ -114,7 +114,7 @@ p +
 
 # Create dataframe of filenames dates
 effort_files <- tibble(
-  file = list.files(paste0(WD, 'GitData/GFW-tools/input/fleet-daily-csvs-100-v2-2019'), 
+  file = list.files(paste0(WD, 'GitData/GFW-tools/input/fleet-monthly-csvs-10-v3-2024'), 
                     pattern = '.csv', recursive = T, full.names = T),
   date = ymd(str_extract(file, 
                          pattern = '[[:digit:]]{4}-[[:digit:]]{2}-[[:digit:]]{2}')))
@@ -122,10 +122,7 @@ effort_files <- tibble(
 # Read in data
 fleet <- map_dfr(effort_files$file, .f = read_csv) 
 
-# The native data are at a resolution of 0.01 degrees
-summary(fleet$cell_ll_lat)
-
-# We're interested in making global maps and 0.01 degrees is a much finer resolution than necessary
+# We're interested in making global maps and 0.1 degrees is a much finer resolution than necessary
 # Specify new (lower) resolution in degrees for aggregating data.
 res <- 0.25
 
@@ -158,7 +155,6 @@ eez_effort <- effort_all_sf %>%
          lon_bin = X) %>%
   sf::st_set_geometry(NULL)
 
-
 # Top 3 
 (eez_effort %>% 
     group_by(flag) %>%
@@ -166,11 +162,11 @@ eez_effort <- effort_all_sf %>%
       total_hours = sum(hours, na.rm = TRUE)) %>%
     arrange(desc(total_hours)) %>%
     drop_na() %>%
-    slice(1:3)) # georgia, spain, china
+    slice(1:3)) # spain, china, Guinea Bissau
 
 # Select those top 3 vessel flags
 eez_effort <- eez_effort %>%
-  dplyr::filter(flag == "GEO" | flag == "ESP" | flag == "CUW" )
+  dplyr::filter(flag == "ESP" | flag == "CHN" | flag == "GNB" )
 
 # Last plot!
 p +
