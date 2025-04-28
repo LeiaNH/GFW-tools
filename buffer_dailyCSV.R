@@ -148,18 +148,16 @@ date
 # Step 6: mmsi extraction #
 # ----------------------- #
 
-mmsi <- read.csv(paste0(WD,"GitData/GFW-tools/input/mmsi-daily-csvs-10-v2-2019/", date, ".csv"))
+mmsi <- read.csv(paste0(WD,"GitData/GFW-tools/input/mmsi-daily-csvs-10-v3-2019/mmsi-daily-csvs-10-v3-", date, ".csv"))
 
 # Brief sight of radar data
 glimpse(mmsi)
 # date: Date in YYYY-MM-DD format
 # cell_ll_lat: the latitude of the lower left corner of the grid cell, in decimal degrees
 # cell_ll_lon: the longitude of the lower left corner of the grid cell, in decimal degrees
-# flag: flag state, in iso3 format
-# geartype: geartype, see above description of gear types
+# mmsi_present: number of MMSI of this flag state and geartype that visited this grid cell on this day
 # hours: hours that vessels of this gear type and flag were present in this gridcell on this day
 # fishing_hours: hours that vessels of this geartype and flag were fishing in this grid cell on this day
-# mmsi_present: number of MMSI of this flag state and geartype that visited this grid cell on this day
 
 # Crop data from our study area
 mmsi <- mmsi %>%
@@ -220,7 +218,7 @@ p1 +
 # Step 7: fleet extraction #
 # ------------------------ #
 
-fleet <- read.csv(paste0(WD,"GitData/GFW-tools/input/fleet-daily-csvs-100-v2-2019/", date, ".csv"))
+fleet <- read.csv(paste0(WD,"GitData/GFW-tools/input/fleet-daily-csvs-100-v3-2019/fleet-daily-csvs-100-v3-", date, ".csv"))
 
 # Brief sight of radar data
 glimpse(fleet)
