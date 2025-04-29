@@ -1,7 +1,7 @@
 #--------------------------------------------------------------------------------
 # radar_SAR.R   
 #--------------------------------------------------------------------------------
-# Script used to match radar data locations with SAR (Paolo et al., 2024) for prj-radar-ais-planet 
+# Script used to match radar data locations with SAR (Paolo et al., 2024)
 
 
 # Workflow
@@ -28,8 +28,6 @@ Sys.setenv(TZ="GMT") ### !!! IMPORTANT: IF NOT SET LIKE THIS, MAKE PROBLEMS TO C
 
 library(tidyverse)
 library(lubridate)
-library(raster)
-library(rnaturalearth)
 library(tibble)
 
 #---------------------------------------------------------
@@ -45,7 +43,8 @@ temporal_window <- 120  # 2 hours (time before and after the detection, in minut
 #---------------------------------------------------------------
 
 # Upload the location where the radar detector, deployed on the bird, identified the presence of a ship. This location does not correspond to any fishing vessel detected in the GFW datasets, suggesting the vessel could be non-fishing or potentially engaged in IUU (Illegal, Unreported, and Unregulated) activities
-# 
+
+# This bird data point is entirely made up for this exercise
 radar <- tibble(
   latitude = 14.551,
   longitude = -17.319,
