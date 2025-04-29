@@ -7,7 +7,7 @@
 # Workflow
 # Step 1: setwd
 # Step 2: load libraries
-# Step 3: Set parameters for search match radar-AIS disablings
+# Step 3: Locate study area
 # Step 4: load radar locs
 # Step 5: load AIS-disablings data (Welch et al., 2022)
 # Step 6: Match radar and AIS-disabling data
@@ -191,6 +191,7 @@ dataInt$vessel_mmsi <- as.factor(dataInt$vessel_mmsi)
 # mmsi 224019630
 
 # -------------------------------------------
+# 6: Match radar and AIS-disabling data
 # Calculating distance to the closest vessel
 # -------------------------------------------
 
