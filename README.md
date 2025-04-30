@@ -1,19 +1,51 @@
 # GFW-tools
+=========
 
-Welcome to my repository! Here, you'll find a collection of R scripts that I've developed to work with GFW datasets, along with the gfwr package. Each of the scripts available were coded for specific purposes, so you may not need to run all of them depending on your needs. I created this repository mainly to share some exercises with people who are interested in GFW datasets, as well as vessel tracking data in general.
+Welcome! This repository contains a set of R scripts I’ve developed to work with Global Fishing Watch (GFW) datasets, using the `gfwr` package. Each script was built for a specific task, so feel free to adapt them to your needs.
 
-If you're interested in using GFW-tools scripts, you can download the input data from the following link. I hope you find these resources useful!
+This project is mainly intended to share practical examples with anyone interested in GFW data and vessel tracking.
 
-https://www.dropbox.com/sh/wzjquh63ifolwpl/AADOAQPtE_yKmTVIHjjxyhcka?dl=1
+Getting Started
+---------------
 
-Codes:
+To run these scripts, you’ll need:
 
-* fishingEffort_API.R: This code demonstrates how to use the gfwr::get_raster() function to obtain a summary of fishing effort within an area delimited by a polygon in geojson format.
+1. Input data  
+   Download and save the folder from this link:  
+   https://www.dropbox.com/scl/fo/69p3ghsqf5w3ovrqpiqe3/AIw89KGO2-Y7TA9lMbvW9VY?rlkey=t3q0gnnqbfbnwy7073nb9ovjs&dl=1  
+   Then, set your working directory to this folder in each script.
 
-* buffer_dailyCSV.R: This code shows how to use the daily CSV files available in Global Fishing Watch to obtain a summary of fishing vessel traffic within an area delimited by a buffer around an animal location.
+2. GFW API Token  
+   Some scripts use the GFW API via the `gfwr` package. To access it:  
+   - Request a token from the GFW API Portal:  
+     https://globalfishingwatch.org/our-apis/tokens/signup  
+   - Save your token as a CSV file named `key.csv`  
+   - Ensure the script can read this file properly.
 
-* EEZ_dailyCSV.R: This code demonstrates how to use the daily CSV files available in Global Fishing Watch to obtain a summary of fishing vessel traffic within an area delimited by an Exclusive Economic Zone (EEZ).
+3. R Packages  
+   Required packages are listed at the top of each script. Install them before running the code.
 
-* vessel_ID.R: This code provides various methods for obtaining information about a specific MMSI code (vessel identity).
+Script Overview
+---------------
 
+- fishingEffort_API.R  
+  Uses `gfwr::get_raster()` to summarize fishing effort within a custom polygon.
 
+- buffer_dailyCSV.R  
+  Summarizes vessel activity within a buffer around animal locations using daily CSV data.
+
+- EEZ_monthlyCSV.R  
+  Summarizes vessel activity inside an EEZ using daily CSV data.
+
+- vessel_ID.R  
+  Explores different ways to get information on a vessel using its MMSI.
+
+- radar_AISdisablings.R  
+  Demonstrates how to use the AIS disabling dataset (Welch et al., 2022).
+
+- radar_SAR.R  
+  Demonstrates how to work with satellite SAR imagery (Paolo et al., 2024).
+
+---
+
+I hope you find these tools useful!

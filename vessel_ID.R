@@ -13,7 +13,7 @@
 # ------------------- #
 
 WD <- "D:/Dropbox/" #minipc
-#WD <- "C:/Users/lnh88/Dropbox/" #laptop
+WD <- "C:/Users/lnh88/Dropbox/" #laptop
 
 # In R, scipen is an option that controls the level of scientific notation used when printing numbers. Specifically, it determines the threshold at which scientific notation is used to represent numeric values.
 options(scipen=999)
@@ -48,7 +48,7 @@ mmsiCode <- 225987981
 # ----------------- #
 
 
-fishing_vessels <- utils::read.csv(file=paste0(WD,"GitData/GFW-tools/input/fishing-vessels-v2.csv")) 
+fishing_vessels <- utils::read.csv(file=paste0(WD,"GitData/GFW-tools/input/fishing-vessels-v3.csv")) 
 
 glimpse(fishing_vessels)
 
@@ -92,8 +92,7 @@ fishing_vessels <- fishing_vessels %>%
 key <- readr::read_csv(paste0(WD, "GitData/GFW-tools/key.csv")) %>% # here I load a csv file where I stored my API token
   pull(key) 
 
-(gfw <- gfwr::get_vessel_info(query = mmsiCode, search_type = "search", 
-                              dataset = "all", key = key))
+(gfw <- gfwr::get_vessel_info(query = mmsiCode, search_type = "search",  key = key))
 
 # --------------------- #
 # Step 6. Web Scrapping #
@@ -101,11 +100,10 @@ key <- readr::read_csv(paste0(WD, "GitData/GFW-tools/key.csv")) %>% # here I loa
 
 help(rvest)
 
+# here's an example with myshiptracking website 
+
 rvest::read_html(paste0("https://www.myshiptracking.com/vessels/mmsi-", mmsiCode))  %>%
   rvest::html_nodes("strong") %>%
   rvest::html_text()
 
-rvest::read_html(paste0("https://www.marinetraffic.com/en/ais/details/ships/mmsi:", mmsiCode)) %>%
-  rvest::html_nodes("head") %>%
-  rvest::html_text() 
 
