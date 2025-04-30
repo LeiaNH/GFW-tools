@@ -11,8 +11,8 @@
 # Step 1. Set your WD #
 # ------------------- #
 
-WD <- "D:/Dropbox/" #minipc
-#WD <- "C:/Users/lnh88/Dropbox/" #laptop
+#WD <- "D:/Dropbox/" #minipc
+WD <- "C:/Users/lnh88/Dropbox/" #laptop
 
 # -------------------- #
 # Step 2. Requirements #
@@ -29,7 +29,6 @@ library(tidyverse)
 library(qdapRegex)
 library(readxl)
 library(rnaturalearth)
-library(geojsonsf)
 library(sf)
 
 # install rgfw
@@ -50,14 +49,16 @@ key <- readr::read_csv(paste0(WD, "GitData/GFW-tools/key.csv")) %>% # here I loa
 plot(area)
 
 # set the years that you want to process
-years <- c(2015:2023)
+#years <- c(2023:2024)
 
 # let's keep just one year
-# years <- 2023
+years <- 2024
 
 # ------------------------------ #
 # Step 4. Fishing effort summary #
 # ------------------------------ #
+
+?get_raster
 
 # empty list to store the raw data
 lraw <- list()
@@ -71,7 +72,7 @@ for(i in seq_along(years)){
     raw <- get_raster(
       spatial_resolution = 'LOW', # Can be "low" = 0.1 degree or "high" = 0.01 degree
       temporal_resolution = 'YEARLY', # Can be 'daily','monthly','yearly'
-      group_by = 'VESSEL_ID', # Can be 'vessel_id', 'flag', 'geartype', 'flagAndGearType
+      group_by = 'FLAGANDGEARTYPE', # Can be 'vessel_id', 'flag', 'geartype', 'flagAndGearType
       start_date = paste0(y, '-01-01'),
       end_date = paste0(y, '-12-31'),
       region = area, # geojson or GFW region code, shape to filter raster
@@ -85,34 +86,39 @@ for(i in seq_along(years)){
 # unlist data stored 
 raw <- do.call(rbind, lraw)
 
-# rename
-raw <- raw %>%
-  rename('Year'='Time Range',
-         'VesselID' = 'Vessel ID',
-         'VesselName' = 'Vessel Name',
-         'EntryTimestamp' = 'Entry Timestamp',
-         'ExitTimestamp' = 'Exit Timestamp',
-         'GearType' = 'Gear Type',
-         'VesselType' = 'Vessel Type',
-         'FirstTransmission Date' = 'First Transmission Date',
-         'LastTransmission Date' = 'Last Transmission Date',
-         'ApparentFishingHours' = 'Apparent Fishing Hours') 
-
-#write.csv(raw, paste0(WD,"GitData/GFW-tools/output/WA_fishingeffort/filename.csv"), row.names = F)
-
 # ----------------- #
 # Step 6. Quick map #
 # ----------------- #
 
-# Let's see that we want to plot Lithuanian fleet fishing effort within FAO37
+# Let's see that we want to plot Spanish fleet fishing effort within the study area
+
+glimpse(raw)
+
+raw$Geartype = as.factor(raw$Geartype)
 
 # First read the file with gridded data already saved
 fishingeffort <- raw %>%
   # filter the fleet that you are interested in
-  dplyr::filter(Flag == "ESP") 
+  dplyr::filter(Flag == "ESP") %>%
+  group_by(Geartype, Lat, Lon) %>%
+  dplyr::summarize(`Fishing effort` = sum(`Apparent Fishing Hours`))
 
-# If we want to plot year by year we need to parse the var to factor
-fishingeffort$Year = as.factor(fishingeffort$Year)
+# Summarize total fishing effort by Geartype
+fishingeffort_summary <- fishingeffort %>%
+  dplyr::group_by(Geartype) %>%
+  dplyr::summarize(total_fishing_effort = sum(`Fishing effort`, na.rm = TRUE))
+
+# Get the top 3 gear types with the most fishing effort
+top_3_geartypes <- fishingeffort_summary %>%
+  dplyr::arrange(desc(total_fishing_effort)) %>%
+  dplyr::slice_head(n = 3)
+
+# Filter the fishingeffort data for the top 3 gear types
+fishingeffort_top_3 <- fishingeffort %>%
+  dplyr::filter(Geartype %in% top_3_geartypes$Geartype)
+
+# View the filtered data
+glimpse(fishingeffort_top_3)
 
 # World polygons from rnaturalearthdata
 world <- rnaturalearth::ne_countries(scale = "medium", returnclass = "sf")
@@ -141,9 +147,10 @@ extent <- coord_sf(xlim = c(min(fishingeffort$Lon), max(fishingeffort$Lon)),
       legend.position="bottom")+
     
     #plot navigation hours data
-    geom_tile(data = fishingeffort, aes(x = Lon, y = Lat, fill = ApparentFishingHours))+
+    geom_tile(data = fishingeffort_top_3, aes(x = Lon, y = Lat, fill = `Fishing effort`))+
     scale_fill_viridis_c(trans="log10")+
   # limit your study area
   extent +
   # draw a panel per year
-  facet_wrap(~Year))
+  facet_wrap(~Geartype))
+

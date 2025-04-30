@@ -11,6 +11,7 @@
 # Step 4: load radar locs
 # Step 5: load AIS-disablings data (Welch et al., 2022)
 # Step 6: Match radar and AIS-disabling data
+# Step 7: APIs tool
 
 #---------------------------------------------------------------
 # 1. Set working directory and Sys.Time
@@ -31,13 +32,15 @@ library(lubridate)
 library(rnaturalearth)
 library(tibble)
 library(sf)
+library(move)
+library(gfwr)
 
 #---------------------------------------------------------
 # 3. Study area
 #---------------------------------------------------------
 
 # World polygons from rnaturalearthdata
-world <- ne_countries(scale = "medium", returnclass = "sf")
+world <- ne_countries(scale = "medium", returnclass = "sf") 
 
 # Define extent limits
 lon_min <- -26
@@ -73,7 +76,7 @@ extent <- coord_sf(xlim = c(lon_min, lon_max), ylim = c(lat_min, lat_max))
 # This bird data point is entirely made up for this exercise
 radar <- tibble(
   latitude = 15.120,
-  longitude = -17.521,#7.319
+  longitude = -17.521,
   time = "30/7/2019 06:01:10"
 )
 
@@ -89,9 +92,11 @@ glimpse(radar)
   geom_point(
     data = radar,
     aes(x = longitude, y = latitude), 
-    colour= "black",
+    fill= "red",
+    colour = "black",
     alpha = 1,
-    size = 3))
+    shape = 21,
+    size = 4))
 
 #---------------------------------------------------------------
 # 5. Load AIS-disablings data
@@ -188,8 +193,6 @@ dataInt$vessel_mmsi <- as.factor(dataInt$vessel_mmsi)
       alpha = 0.5) +
     facet_wrap(~vessel_mmsi))
 
-# mmsi 224019630
-
 # -------------------------------------------
 # 6: Match radar and AIS-disabling data
 # Calculating distance to the closest vessel
@@ -215,3 +218,68 @@ closest <- dataInt_sf %>%
 # Output the closest vessel_mmsi and distance
 closest %>%
   dplyr::select(vessel_mmsi, distance_km)
+
+# ------------------- #
+# API - Vessel finder #
+# ------------------- #
+
+GFW_TOKEN <- readr::read_csv(paste0(WD, "/key.csv")) %>% # here I load a csv file where I stored my API token
+  pull(key) 
+
+# Individual vessel information
+
+vessel_info <- gfwr::get_vessel_info(query = 224019630,
+                      key = GFW_TOKEN)
+
+vessel_info$selfReportedInfo$shipname[1]
+vessel_info$selfReportedInfo$flag[1]
+
+# Other AIS disabling events identified
+
+id <- vessel_info$selfReportedInfo$vesselId
+get_event(event_type = "GAP",
+          vessels = id[1],
+          key = GFW_TOKEN)
+
+# Last activity from that specific vessel in Senegal EEZ
+
+gap_start_timestamp <- data %>%
+  dplyr::filter(mmsi == 224019630) %>%
+  pull(gap_start_timestamp)
+
+# Fishing activity
+
+get_event(event_type = "FISHING",
+          vessels = id[1],
+          start_date = lubridate::as_date(gap_start_timestamp) - 30, # 1 month
+          end_date = lubridate::as_date(gap_start_timestamp),
+          region = 8371,
+          region_source = 'EEZ',
+          key = GFW_TOKEN)
+
+# AIS disablings
+
+get_event(event_type = "GAP",
+          vessels = id[1],
+          start_date = lubridate::as_date(gap_start_timestamp) - 30, # 1 month
+          end_date = lubridate::as_date(gap_start_timestamp),
+          region = 8371, 
+          region_source = 'EEZ',
+          key = GFW_TOKEN)
+
+get_event(event_type = "GAP",
+          vessels = id[1],
+          start_date = lubridate::as_date(gap_start_timestamp) - 30, # 1 month
+          end_date = lubridate::as_date(gap_start_timestamp),
+          key = GFW_TOKEN)
+
+(p <- p +
+    # bird-radar location
+    geom_point(
+      data = radar,
+      aes(x = -17.5, y = 16.7), 
+      fill= "blue",
+      colour = "black",
+      alpha = 1,
+      shape = 21,
+      size = 4))
