@@ -1,5 +1,4 @@
 # GFW-tools
-=========
 
 Welcome! This repository contains a set of R scripts I’ve developed to work with Global Fishing Watch (GFW) datasets, using the `gfwr` package. Each script was built for a specific task, so feel free to adapt them to your needs.
 
@@ -29,22 +28,22 @@ Script Overview
 ---------------
 
 - fishingEffort_API.R  
-  Uses `gfwr::get_raster()` to summarize fishing effort within a custom polygon.
+  Summarizes fishing effort within a custom polygon using GPS APIs.
 
 - buffer_dailyCSV.R  
-  Summarizes vessel activity within a buffer around animal locations using daily CSV data.
+  Summarizes vessel activity within a buffer around animal locations using static GFW daily CSV data.
 
 - EEZ_monthlyCSV.R  
-  Summarizes vessel activity inside an EEZ using daily CSV data.
+  Summarizes vessel activity inside an EEZ using static GFW daily CSV data.
 
 - vessel_ID.R  
   Explores different ways to get information on a vessel using its MMSI.
 
 - radar_AISdisablings.R  
-  Demonstrates how to use the AIS disabling dataset (Welch et al., 2022).
+  Explores a way to identify AIS disabling dataset (Welch et al., 2022) around animal locations.
 
 - radar_SAR.R  
-  Demonstrates how to work with satellite SAR imagery (Paolo et al., 2024).
+  Explores a way to identify vessels from satellite SAR imagery (Paolo et al., 2024) around animal locations.
 
 ---
 
