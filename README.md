@@ -34,7 +34,7 @@ Script Overview
   Summarizes vessel activity within a buffer around animal locations using static GFW daily CSV data.
 
 - EEZ_monthlyCSV.R  
-  Summarizes vessel activity inside an EEZ using static GFW daily CSV data.
+  Summarizes vessel activity inside an EEZ using static GFW monthly CSV data.
 
 - vessel_ID.R  
   Explores different ways to get information on a vessel using its MMSI.

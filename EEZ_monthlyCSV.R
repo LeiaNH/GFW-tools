@@ -1,4 +1,4 @@
-# EEZ_dailyCSV.R
+# EEZ_monthlyCSV.R
 # aim: Access data from monthly csv to calculate fishing effort and vessels within an EEZ
 
 # Step 1. Set your working directory
