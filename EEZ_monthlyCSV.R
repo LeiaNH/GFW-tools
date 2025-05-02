@@ -18,34 +18,12 @@ WD <- "C:/Users/lnh88/Dropbox/" #laptop
 # Step 2. Requirements #
 # -------------------- #
 
-# install tidyverse, qdapRegex and readxl for data manipulation and visualization
-#install.packages("tidyverse")
-#install.packages("qdapRegex")
-#install.packages("readxl")
-#install.packages("rnaturalearth")
-#remotes::install_github("ropensci/rnaturalearthhires")
-#install.packages("maps)
-
-# load tidyverse, qdapRegex and readxl libraries
+# load libraries
 library(tidyverse) 
 library(lubridate) 
-library(qdapRegex)
 library(readxl)
 library(rnaturalearth)
-library(rnaturalearthhires)
 library(maps) 
-
-# install rgfw
-#devtools::install_github("GlobalFishingWatch/gfwr")
-
-# load rgfw
-library(gfwr)
-
-# install raster and sf for spatial data manipulation
-#install.packages("raster")
-#install.packages("sf")
-
-# load raster and sf libraries
 library(raster) 
 library(sf)
 
@@ -87,7 +65,6 @@ options(warn=-1)
 # ---------------- #
 
 #https://www.marineregions.org/gazetteer.php?p=details&id=8369
-
 
 # Load EEZ polygons: EEZ shapefile from MarineRegions.org
 eez <- sf::read_sf(paste0(WD,"GitData/GFW-tools/input/World_EEZ_v10_20180221"), layer = 'eez_v10') %>% 

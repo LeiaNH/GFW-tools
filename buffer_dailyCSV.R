@@ -20,34 +20,11 @@ WD <- "C:/Users/lnh88/Dropbox/" #laptop
 # Step 2. Requirements #
 # -------------------- #
 
-# install tidyverse, qdapRegex and readxl for data manipulation and visualization
-#install.packages("tidyverse")
-#install.packages("qdapRegex")
-#install.packages("readxl")
-#install.packages("rnaturalearth")
-#remotes::install_github("ropensci/rnaturalearthhires")
-#install.packages("maps)
-
-# load tidyverse, qdapRegex and readxl libraries
+# load libraries
 library(tidyverse) 
 library(lubridate) 
-library(qdapRegex)
-library(readxl)
 library(rnaturalearth)
-library(rnaturalearthhires)
 library(maps) 
-
-# install rgfw
-#devtools::install_github("GlobalFishingWatch/gfwr")
-
-# load rgfw
-library(gfwr)
-
-# install raster and sf for spatial data manipulation
-#install.packages("raster")
-#install.packages("sf")
-
-# load raster and sf libraries
 library(raster) 
 library(sf)
 
@@ -254,7 +231,7 @@ glimpse(mmsi_info)
 
 fleet <- read.csv(paste0(WD,"GitData/GFW-tools/input/fleet-daily-csvs-100-v3-2019/fleet-daily-csvs-100-v3-", date, ".csv"))
 
-# Brief sight of radar data
+# Brief sight 
 glimpse(fleet)
 
 #date: Date in YYYY-MM-DD format. For the fleet-monthly-10-v3 data, the date corresponds to the first date of the month

@@ -29,6 +29,8 @@ Sys.setenv(TZ="GMT") ### !!! IMPORTANT: IF NOT SET LIKE THIS, MAKE PROBLEMS TO C
 library(tidyverse)
 library(lubridate)
 library(tibble)
+library(rnaturalearth)
+library(sf)
 
 #---------------------------------------------------------
 # 3. Set parameters for search match radar-sar
@@ -59,13 +61,74 @@ radar$time = lubridate::dmy_hm(radar$time)
 glimpse(radar)
 
 # plot radar points
-par(bg = "lightblue")
-plot(radar$longitude, radar$latitude, 
-     xlab = "Longitude", ylab = "Latitude", 
-     xlim = c(radar$longitude - 0.02, radar$longitude + 0.02),
-     ylim = c(radar$latitude  - 0.02, radar$latitude  + 0.02),
-     pch = 19, col = "blue")
-text(radar$longitude+ 0.002, radar$latitude , labels = "bird", col = "black")
+#par(bg = "lightblue")
+#plot(radar$longitude, radar$latitude, 
+ #    xlab = "Longitude", ylab = "Latitude", 
+  #   xlim = c(radar$longitude - 0.02, radar$longitude + 0.02),
+   #  ylim = c(radar$latitude  - 0.02, radar$latitude  + 0.02),
+    # pch = 19, col = "blue")
+#text(radar$longitude+ 0.002, radar$latitude , labels = "bird", col = "black")
+
+
+# World polygons from rnaturalearthdata
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+# Cape Verde shearwater foraging area
+extent <- coord_sf(xlim = c(-26, -11), ylim = c(13, 22))
+
+# This is just to remove warnings from ggplot
+options(warn=-1)
+
+# quick view of our study area
+ggplot() +
+    # plot and color world land mask  
+    geom_sf(data = world, fill= "antiquewhite") +
+    geom_sf_label(data = world,aes(label = name))+
+    # limit your study area
+    extent +
+    # theme 
+    theme(
+      # color water
+      panel.background = element_rect(fill="aliceblue"),
+      # plot grid lines
+      panel.grid.major = element_line(color = gray(.5), linetype = "dashed", size = 0.5),
+      # remove axes title
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank()) +
+    #radar loc
+    geom_point(
+      data = radar,
+      aes(x = longitude, y = latitude), 
+      colour= "red",
+      alpha = 0.5)
+
+# Zoom in!
+extent_loc <- coord_sf(xlim = c(radar$longitude-spatial_extent, radar$longitude+spatial_extent), 
+                       ylim = c(radar$latitude-spatial_extent, radar$latitude+spatial_extent))
+
+(p <- 
+    # open ggplot
+    ggplot() +
+    # plot and color world land mask  
+    geom_sf(data = world, fill= "antiquewhite") +
+    geom_sf_label(data = world,aes(label = name))+
+    # limit your study area
+    extent_loc +
+    # theme 
+    theme(
+      # color water
+      panel.background = element_rect(fill="aliceblue"),
+      # plot grid lines
+      panel.grid.major = element_line(color = gray(.5), linetype = "dashed", size = 0.5),
+      # remove axes title
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank()) +
+    #radar loc
+    geom_point(
+      data = radar,
+      aes(x = longitude, y = latitude), 
+      colour= "red",
+      alpha = 0.5))
 
 #---------------------------------------------------------------
 # 5. Load SAR data
@@ -90,30 +153,49 @@ bbox <- raster::extent(
   )
 
 # plot bbox
-plot(as(bbox, "SpatialPolygons"), 
-     add = TRUE, border = "black", lwd = 3)
+#plot(as(bbox, "SpatialPolygons"), 
+ #    add = TRUE, border = "black", lwd = 3)
+
+# Convert to sf polygon
+bbox_sf <- sf::st_as_sfc(as(bbox, "SpatialPolygons"))
+bbox_sf <- sf::st_set_crs(bbox_sf, 4326)  # assuming WGS84
+
+# Add to your ggplot
+(p <- p + 
+  geom_sf(data = bbox_sf, fill = NA, color = "black", linewidth = 3) +
+  # limit your study area
+  extent_loc)
 
 # -------------------------------------------------------------------
 # Filter SAR data overlapping spatio-temporally with the radar event
 # -------------------------------------------------------------------
   
 # TEMPORAL MATCH 
-  
 match <- SAR %>% 
     dplyr::filter(
       timestamp > (radar$time - lubridate::minutes(temporal_window)) &
         timestamp < (radar$time + lubridate::minutes(temporal_window)))
   
 # SPATIAL MATCH
-    
 match <- match %>%
       filter(lon >= bbox@xmin & lon <= bbox@xmax & lat >= bbox@ymin & lat <= bbox@ymax) %>%
   dplyr::rename(longitude = lon, latitude = lat)
 
 # plot ship
-points(match$longitude, match$latitude, 
-     pch = 19, col = "red", cex= 3, add= TRUE)    
-text(match$longitude+0.002, match$latitude, labels = "ship", col = "black")
+#points(match$longitude, match$latitude, 
+ #    pch = 19, col = "red", cex= 3, add= TRUE)    
+#text(match$longitude+0.002, match$latitude, labels = "ship", col = "black")
+
+p + 
+    #radar loc
+    geom_point(
+      data = match,
+      aes(x = longitude, y = latitude), 
+      colour= "blue",
+      alpha = 0.5,
+      size = 3) +
+    # limit your study area
+    extent_loc 
 
 # Take a look
 match

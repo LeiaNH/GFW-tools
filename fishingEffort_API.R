@@ -18,15 +18,8 @@ WD <- "C:/Users/lnh88/Dropbox/" #laptop
 # Step 2. Requirements #
 # -------------------- #
 
-# install tidyverse, qdapRegex and readxl for data manipulation and visualization
-#install.packages("tidyverse")
-#install.packages("qdapRegex")
-#install.packages(readxl)
-#install.packages(rnaturalearth)
-
-# load tidyverse, qdapRegex and readxl libraries
+# load libraries
 library(tidyverse)
-library(qdapRegex)
 library(readxl)
 library(rnaturalearth)
 library(sf)
@@ -41,18 +34,12 @@ library(gfwr)
 key <- readr::read_csv(paste0(WD, "GitData/GFW-tools/key.csv")) %>% # here I load a csv file where I stored my API token
   pull(key) 
 
-# ---------------------------- #
-# Step 3. Study area and years #
-# ---------------------------- #
+# ------------------- #
+# Step 3. Study area  #
+# ------------------- #
 
 (area <- read_sf(paste0(WD, "GitData/REDUCE_study_area/REDUCE_NEW_study_area.shp")))
 plot(area)
-
-# set the years that you want to process
-#years <- c(2023:2024)
-
-# let's keep just one year
-years <- 2024
 
 # ------------------------------ #
 # Step 4. Fishing effort summary #
@@ -60,38 +47,80 @@ years <- 2024
 
 ?get_raster
 
-# empty list to store the raw data
-lraw <- list()
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# EXAMPLE: VESSELS FISHING ON A SINGLE DAY
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
+# using region codes
+code_eez <- get_region_id(region_name = 'MRT', region_source = 'EEZ', key= key)
+                          
+# get information: GFW base function to get raster from API and convert response to data frame
+raw <- get_raster(
+  spatial_resolution = 'LOW', # Can be "low" = 0.1 degree or "high" = 0.01 degree
+  temporal_resolution = 'DAILY', # Can be 'daily','monthly','yearly'
+  group_by = 'VESSEL_ID', # Can be 'vessel_id', 'flag', 'geartype', 'flagAndGearType
+  start_date = paste0('2024-01-01'),
+  end_date = paste0('2024-01-02'),
+  region = code_eez$id, # shapefile or GFW region code, shape to filter raster
+  region_source = 'EEZ', #source of the region ('eez','mpa', 'trfmo' or 'user_json')
+  key = key) #Authorization token. Can be obtained with gfw_auth function
 
-# let's loop it across years
-for(i in seq_along(years)){
-    #i = 1
-    y <- years[i]  
-    
-    # get information: GFW base function to get raster from API and convert response to data frame
-    raw <- get_raster(
+glimpse(raw)
+
+# First read the file with gridded data already saved
+(vessel <- raw %>%
+  # filter the fleet that you are interested in
+  group_by(MMSI) %>%
+  dplyr::summarize(`Fishing effort` = sum(`Apparent Fishing Hours`)) %>%
+  dplyr::arrange(desc(`Fishing effort`)) %>%
+  dplyr::slice_head(n = 1))
+
+# check available information from that specific vessel 
+#https://globalfishingwatch.github.io/gfwr/articles/identity
+
+# Individual vessel information
+?get_vessel_info
+
+vessel_info <- gfwr::get_vessel_info(query = vessel$MMSI,
+                                     key = key) #431782000
+
+view(vessel_info$selfReportedInfo)
+
+vessel_info$selfReportedInfo
+
+# Fishing events 
+?get_event
+
+fishing_Event <- get_event(event_type = "FISHING",
+          vessels = vessel_info$selfReportedInfo$vesselId[2],
+          start_date = "2024-01-01", 
+          end_date = "2024-01-02",
+          region = code_eez$id,
+          region_source = 'EEZ',
+          key = key)
+
+fishing_Event
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# EXAMPLE: SPANISH FISHING EFFORT
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# get information: GFW base function to get raster from API and convert response to data frame
+raw <- get_raster(
       spatial_resolution = 'LOW', # Can be "low" = 0.1 degree or "high" = 0.01 degree
       temporal_resolution = 'YEARLY', # Can be 'daily','monthly','yearly'
       group_by = 'FLAGANDGEARTYPE', # Can be 'vessel_id', 'flag', 'geartype', 'flagAndGearType
-      start_date = paste0(y, '-01-01'),
-      end_date = paste0(y, '-12-31'),
-      region = area, # geojson or GFW region code, shape to filter raster
+      start_date = paste0('2024-01-01'),
+      end_date = paste0('2024-12-31'),
+      region = area, # shapefile or GFW region code, shape to filter raster
       region_source = 'USER_SHAPEFILE', #source of the region ('eez','mpa', 'trfmo' or 'user_json')
       key = key) #Authorization token. Can be obtained with gfw_auth function
-    
-    lraw[i] <- list(raw)
-    
-    }
-
-# unlist data stored 
-raw <- do.call(rbind, lraw)
 
 # ----------------- #
 # Step 6. Quick map #
 # ----------------- #
 
 # Let's see that we want to plot Spanish fleet fishing effort within the study area
-
 glimpse(raw)
 
 raw$Geartype = as.factor(raw$Geartype)

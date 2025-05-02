@@ -223,63 +223,36 @@ closest %>%
 # API - Vessel finder #
 # ------------------- #
 
-GFW_TOKEN <- readr::read_csv(paste0(WD, "/key.csv")) %>% # here I load a csv file where I stored my API token
+key <- readr::read_csv(paste0(WD, "/key.csv")) %>% # here I load a csv file where I stored my API token
   pull(key) 
 
 # Individual vessel information
-
 vessel_info <- gfwr::get_vessel_info(query = 224019630,
-                      key = GFW_TOKEN)
-
-vessel_info$selfReportedInfo$shipname[1]
-vessel_info$selfReportedInfo$flag[1]
+                      key = key) 
 
 # Other AIS disabling events identified
-
+view(vessel_info$selfReportedInfo)
 id <- vessel_info$selfReportedInfo$vesselId
 get_event(event_type = "GAP",
-          vessels = id[1],
-          key = GFW_TOKEN)
+          vessels = id[2],
+          key = key)
 
 # Last activity from that specific vessel in Senegal EEZ
-
 gap_start_timestamp <- data %>%
   dplyr::filter(mmsi == 224019630) %>%
   pull(gap_start_timestamp)
 
-# Fishing activity
-
-get_event(event_type = "FISHING",
-          vessels = id[1],
-          start_date = lubridate::as_date(gap_start_timestamp) - 30, # 1 month
-          end_date = lubridate::as_date(gap_start_timestamp),
-          region = 8371,
-          region_source = 'EEZ',
-          key = GFW_TOKEN)
-
-# AIS disablings
+#intentional AIS disabling
+get_event(event_type = "GAP",
+          vessels = id[2],
+          start_date = lubridate::as_date(gap_start_timestamp) - 31, # 1 month
+          end_date = lubridate::as_date(gap_start_timestamp)-1,
+          gap_intentional_disabling = TRUE,
+          key = key)
 
 get_event(event_type = "GAP",
-          vessels = id[1],
-          start_date = lubridate::as_date(gap_start_timestamp) - 30, # 1 month
-          end_date = lubridate::as_date(gap_start_timestamp),
-          region = 8371, 
-          region_source = 'EEZ',
-          key = GFW_TOKEN)
-
-get_event(event_type = "GAP",
-          vessels = id[1],
-          start_date = lubridate::as_date(gap_start_timestamp) - 30, # 1 month
-          end_date = lubridate::as_date(gap_start_timestamp),
-          key = GFW_TOKEN)
-
-(p <- p +
-    # bird-radar location
-    geom_point(
-      data = radar,
-      aes(x = -17.5, y = 16.7), 
-      fill= "blue",
-      colour = "black",
-      alpha = 1,
-      shape = 21,
-      size = 4))
+          vessels = id[2],
+          start_date = lubridate::as_date(gap_start_timestamp) - 365, # 1 year
+          end_date = lubridate::as_date(gap_start_timestamp)-1,
+          gap_intentional_disabling = TRUE,
+          key = key)
