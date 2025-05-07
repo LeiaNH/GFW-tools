@@ -102,7 +102,11 @@ glimpse(radar)
 # 5. Load AIS-disablings data
 #---------------------------------------------------------------
 
-data <- read.csv(paste0(WD, "/input/AIS_Disabling/ais_disabling_events.csv")) %>%
+data <- read.csv(paste0(WD, "/input/AIS_Disabling/ais_disabling_events.csv"))
+glimpse(data)
+view(data)
+
+data <- data %>%
   # parse to date
   dplyr::mutate(gap_start_timestamp = lubridate::ymd_hms(substr(gap_start_timestamp,1,19)),
                 gap_end_timestamp = lubridate::ymd_hms(substr(gap_end_timestamp,1,19))) %>%

@@ -136,6 +136,8 @@ extent_loc <- coord_sf(xlim = c(radar$longitude-spatial_extent, radar$longitude+
 
 # Here's a subset of SAR dataset. Complete dataset can be downloaded from  GFW website
 SAR <- readr::read_csv(paste0(WD, "/input/SAR/industrial_vessels_v20240102_subset2021.csv"))
+glimpse(SAR)
+# view(SAR)
 
 #---------------------------------------------------------------
 # 6. Match radar and SAR data
