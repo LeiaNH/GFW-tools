@@ -50,11 +50,21 @@ plot(area)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # EXAMPLE: VESSELS FISHING ON A SINGLE DAY
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- 
+?get_region_id
 # using region codes
-code_eez <- get_region_id(region_name = 'MRT', region_source = 'EEZ', key= key)
-                          
+gr<-get_regions(key=key)
+code_eez <- get_region_id(
+  region_name = 8369, 
+  region_source = 'EEZ', 
+  key= key)
+
+#code_eez <- get_region_id(
+ # region_name = 'MRT', 
+ #  region_source = 'EEZ', 
+ #  key= key)
+       
 # get information: GFW base function to get raster from API and convert response to data frame
+?get_raster
 raw <- get_raster(
   spatial_resolution = 'LOW', # Can be "low" = 0.1 degree or "high" = 0.01 degree
   temporal_resolution = 'DAILY', # Can be 'daily','monthly','yearly'
@@ -81,8 +91,7 @@ glimpse(raw)
 # Individual vessel information
 ?get_vessel_info
 
-vessel_info <- gfwr::get_vessel_info(query = vessel$MMSI,
-                                     key = key) #431782000
+vessel_info <- gfwr::get_vessel_info(query = vessel$MMSI,key = key) #431782000
 
 view(vessel_info$selfReportedInfo)
 
@@ -92,7 +101,7 @@ vessel_info$selfReportedInfo
 ?get_event
 
 fishing_Event <- get_event(event_type = "FISHING",
-          vessels = vessel_info$selfReportedInfo$vesselId[2],
+          vessels = vessel_info$selfReportedInfo$vesselId[1],
           start_date = "2024-01-01", 
           end_date = "2024-01-02",
           region = code_eez$id,

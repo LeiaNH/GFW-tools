@@ -62,11 +62,11 @@ glimpse(radar)
 
 # plot radar points
 #par(bg = "lightblue")
-#plot(radar$longitude, radar$latitude, 
- #    xlab = "Longitude", ylab = "Latitude", 
-  #   xlim = c(radar$longitude - 0.02, radar$longitude + 0.02),
-   #  ylim = c(radar$latitude  - 0.02, radar$latitude  + 0.02),
-    # pch = 19, col = "blue")
+plot(radar$longitude, radar$latitude, 
+     xlab = "Longitude", ylab = "Latitude", 
+     xlim = c(radar$longitude - 0.02, radar$longitude + 0.02),
+     ylim = c(radar$latitude  - 0.02, radar$latitude  + 0.02),
+     pch = 19, col = "blue")
 #text(radar$longitude+ 0.002, radar$latitude , labels = "bird", col = "black")
 
 
@@ -167,7 +167,7 @@ bbox_sf <- sf::st_set_crs(bbox_sf, 4326)  # assuming WGS84
   geom_sf(data = bbox_sf, fill = NA, color = "black", linewidth = 3) +
   # limit your study area
   extent_loc)
-
+x11();p
 # -------------------------------------------------------------------
 # Filter SAR data overlapping spatio-temporally with the radar event
 # -------------------------------------------------------------------
